@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "psyassess"
+version = "0.1.0"
+description = ""
+authors = ["Martin Benzal <martin.gonzalez@simplekyc.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+streamlit = "^1.29.0"
+sqlalchemy = "^2.0.24"
+
+[tool.poetry.scripts]
+runapp = "streamlit run psyassess/app.py"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
