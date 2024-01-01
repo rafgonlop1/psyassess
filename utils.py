@@ -7,9 +7,21 @@ from tables.correspondency import test_table_dict
 def create_inputs(test_table):
     inputs = {}
     clean_table = test_table.drop(columns=["Pc", "De"])
-    for column in clean_table.columns:
-        input_value = st.text_input(f"Ingresa datos para {column}", "")
-        inputs[column] = input_value
+
+    for i in range(0, len(clean_table.columns), 3):
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            if i < len(clean_table.columns):
+                column = clean_table.columns[i]
+                inputs[column] = st.text_input(f"Ingresa datos para {column}", "")
+        with col2:
+            if i + 1 < len(clean_table.columns):
+                column = clean_table.columns[i + 1]
+                inputs[column] = st.text_input(f"Ingresa datos para {column}", "")
+        with col3:
+            if i + 2 < len(clean_table.columns):
+                column = clean_table.columns[i + 2]
+                inputs[column] = st.text_input(f"Ingresa datos para {column}", "")
     return inputs
 
 
@@ -27,11 +39,12 @@ def find_index(df, column, value):
             return float(cell)  # It's a normal number
 
     # Processing the desired column
-    processed_column = df[column].apply(process_cell)
+    processed_column: pd.Series = df[column].apply(process_cell)
 
     # Finding the index
-    if any(processed_column <= value):
-        index = processed_column[processed_column <= value].idxmax()  # The highest index where the value is less or equal
+    if (processed_column <= value).any():
+        index = processed_column[
+            processed_column <= value].idxmax()  # The highest index where the value is less or equal
     else:
         index = processed_column.idxmin()
 
@@ -40,23 +53,36 @@ def find_index(df, column, value):
 
 def test_process(inputs, selected_test):
     # Code to process user inputs goes here
-    # Delete keys with empty values
-    new_inputs = {}
-    for key in inputs:
-        if inputs[key] != "":
-            new_inputs[key] = inputs[key]
+    new_inputs = {key: float(value) for key, value in inputs.items() if value != ""}
 
     try:
-        # Read the table
+        # Read the CSV into a DataFrame
         table = pd.read_csv(test_table_dict[selected_test])
 
-        # Find the index for each column
-        outputs = {}
-        for column in new_inputs:
-            outputs[column] = find_index(table, column, float(new_inputs[column]))
+        # Create a list to hold both input and output data for display
+        results_list = []
 
-        st.write("Salidas del usuario:", outputs)
+        # Process each input and find corresponding output, then add to the list
+        for column in new_inputs:
+            # Use find_index function to compute the output for each test
+            output_value = find_index(table, column, new_inputs[column])
+            # Append both input and output to the results list
+            results_list.append({'Test': column, 'Input': new_inputs[column], 'Output': output_value})
+
+        # Convert the results list to a DataFrame for nicer display
+        results_df = pd.DataFrame(results_list)
+
+        # Display the combined input and output data in table format
+        st.markdown("### Resultados:")
+        st.table(results_df)
     except KeyError:
-        st.write("Entradas del usuario:", new_inputs)
-        st.write("Prueba seleccionada:", selected_test)
-        st.write("No se encontró la prueba seleccionada en la base de datos.")
+        # If there's a KeyError, display only the inputs as the test was not found
+        st.markdown("### User Inputs:")
+        # Convert user inputs to a DataFrame for display
+        inputs_df = pd.DataFrame(new_inputs.items(), columns=['Test', 'Input'])
+        st.table(inputs_df)
+
+        st.markdown("### Selected Test:")
+        st.write(selected_test)
+        # Display an error message if the selected test is not found
+        st.error("The selected test was not found in the database.")

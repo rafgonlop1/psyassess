@@ -19,10 +19,10 @@ def main():
     # Load data for the selected test
     test_table = load_test_table(selected_test)
 
-    # Añadir un checkbox como toggle
+    # Add toggle checkbox
     if st.checkbox('Mostrar Datos de la Prueba Seleccionada'):
         st.write("Datos de la Prueba Seleccionada:")
-        st.dataframe(test_table)
+        st.dataframe(test_table, hide_index=True)
 
     # Create input fields for each column
     test_inputs = create_inputs(test_table)
