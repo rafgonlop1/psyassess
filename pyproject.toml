@@ -6,7 +6,7 @@ authors = ["Martin Benzal <martin.gonzalez@simplekyc.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.10"
 streamlit = "^1.29.0"
 sqlalchemy = "^2.0.24"
 
